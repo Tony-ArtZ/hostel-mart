@@ -10,8 +10,11 @@ export default function BuyPage() {
   const [name, setName] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRoomDelivery, setIsRoomDelivery] = useState(false);
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total =
+    cart.reduce((sum, item) => sum + item.price * item.quantity, 0) +
+    (isRoomDelivery ? 7 : 0);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -47,6 +50,7 @@ export default function BuyPage() {
           name,
           roomNumber,
           items: orderItems,
+          delivery: isRoomDelivery,
         }),
       });
 
@@ -55,6 +59,7 @@ export default function BuyPage() {
       if (result.success) {
         // Order successful
         toast.success("Order placed successfully!");
+        alert("Success! for more info visit 2B-28");
 
         // Clear cart and redirect
         clearCart();
@@ -103,9 +108,30 @@ export default function BuyPage() {
               <span>₹{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
+          <div className="flex justify-between mt-4">
+            <label className="text-emerald-400">Room Delivery (+₹7)</label>
+            <input
+              type="checkbox"
+              checked={isRoomDelivery}
+              onChange={(e) => setIsRoomDelivery(e.target.checked)}
+              className="form-checkbox h-5 w-5 text-emerald-600"
+            />
+          </div>
           <div className="border-t mt-4 pt-2 font-bold text-emerald-300">
             Total: ₹{total.toFixed(2)}
           </div>
+          {!isRoomDelivery && (
+            <p className="text-emerald-500 mt-4 text-lg font-bold">
+              For pickup, visit room{" "}
+              <span className="text-white text-2xl font-extrabold">2B-28</span>.
+            </p>
+          )}
+          <p className="text-emerald-500 mt-4 text-lg font-bold">
+            For Contact:{" "}
+            <span className="text-white text-2xl font-extrabold">
+              +916200714579{" "}
+            </span>
+          </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

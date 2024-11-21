@@ -8,8 +8,8 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Green Glow Shop",
-  description: "Eco-friendly products with a modern touch",
+  title: "FoodHamster",
+  description: "One stop for all your food needs at KP-10B",
 };
 
 export default function RootLayout({

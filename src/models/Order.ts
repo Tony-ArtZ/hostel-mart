@@ -12,6 +12,7 @@ export interface IOrder extends mongoose.Document {
   items: IOrderItem[];
   totalAmount: number;
   status: "Pending" | "Processing" | "Completed" | "Cancelled";
+  delivery: boolean;
 }
 
 const OrderSchema = new mongoose.Schema<IOrder>(
@@ -52,6 +53,10 @@ const OrderSchema = new mongoose.Schema<IOrder>(
       type: String,
       enum: ["Pending", "Processing", "Completed", "Cancelled"],
       default: "Pending",
+    },
+    delivery: {
+      type: Boolean,
+      default: false,
     },
   },
   {

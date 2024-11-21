@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     // Start transaction
     session.startTransaction();
 
-    const { name, roomNumber, items } = await req.json();
+    const { name, roomNumber, items, delivery } = await req.json();
 
     // Validate and process order items
     const processedItems = await Promise.all(
@@ -42,10 +42,14 @@ export async function POST(req: NextRequest) {
     );
 
     // Calculate total amount
-    const totalAmount = processedItems.reduce(
+    let totalAmount = processedItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
+
+    if (delivery) {
+      totalAmount += 7;
+    }
 
     try {
       const transporter = nodemailer.createTransport({
@@ -63,7 +67,7 @@ export async function POST(req: NextRequest) {
         from: process.env.NEXT_PUBLIC_EMAIL,
         to: process.env.NEXT_PUBLIC_EMAIL,
         subject: "New Order",
-        text: `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount}`,
+        text: `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount}, delivery needed: ${delivery}`,
       };
 
       transporter.sendMail(mailOptions, function (error, info) {
@@ -91,6 +95,7 @@ export async function POST(req: NextRequest) {
           roomNumber,
           items: processedItems,
           totalAmount,
+          delivery,
         },
       ],
       { session }
