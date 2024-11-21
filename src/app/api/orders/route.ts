@@ -9,6 +9,7 @@ import nodemailer from "nodemailer";
 export async function POST(req: NextRequest) {
   await dbConnect();
   const session = await mongoose.startSession();
+  let ordered: String[] = [];
 
   try {
     // Start transaction
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
         // Reduce stock
         product.stock -= item.quantity;
         await product.save({ session });
+        ordered.push(product.name);
 
         return {
           product: product._id,
@@ -67,7 +69,15 @@ export async function POST(req: NextRequest) {
         from: process.env.NEXT_PUBLIC_EMAIL,
         to: process.env.NEXT_PUBLIC_EMAIL,
         subject: "New Order",
-        text: `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount}, delivery needed: ${delivery}`,
+        text: `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount},\n delivery needed: ${delivery}, \n items:
+        ${
+          ordered.length > 0
+            ? ordered.map((item) => {
+                return item;
+              })
+            : "No items"
+        }
+        `,
       };
 
       transporter.sendMail(mailOptions, function (error, info) {
