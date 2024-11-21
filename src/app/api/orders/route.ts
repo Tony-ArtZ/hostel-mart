@@ -3,7 +3,6 @@ import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import mongoose from "mongoose";
-import nodemailer from "nodemailer";
 
 // CREATE a new order
 export async function POST(req: NextRequest) {
@@ -54,44 +53,72 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.NEXT_PUBLIC_EMAIL,
-          pass: process.env.NEXT_PUBLIC_EMAIL_PASSWORD,
-        },
-      });
+      //   const transporter = nodemailer.createTransport({
+      //     service: "gmail",
+      //     host: "smtp.gmail.com",
+      //     port: 465,
+      //     secure: true,
+      //     auth: {
+      //       user: process.env.NEXT_PUBLIC_EMAIL,
+      //       pass: process.env.NEXT_PUBLIC_EMAIL_PASSWORD,
+      //     },
+      //   });
 
-      const mailOptions = {
-        from: process.env.NEXT_PUBLIC_EMAIL,
-        to: process.env.NEXT_PUBLIC_EMAIL,
-        subject: "New Order",
-        text: `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount},\n delivery needed: ${delivery}, \n items:
-        ${
-          ordered.length > 0
-            ? ordered.map((item) => {
-                return item;
-              })
-            : "No items"
+      //   const mailOptions = {
+      //     from: process.env.NEXT_PUBLIC_EMAIL,
+      //     to: process.env.NEXT_PUBLIC_EMAIL,
+      //     subject: "New Order",
+      //     text: `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount},\n delivery needed: ${delivery}, \n items:
+      //     ${
+      //       ordered.length > 0
+      //         ? ordered.map((item) => {
+      //             return item;
+      //           })
+      //         : "No items"
+      //     }
+      //     `,
+      //   };
+
+      //   transporter.sendMail(mailOptions, function (error, info) {
+      //     if (error) {
+      //       throw new Error("Error sending email");
+      //     } else {
+      //       console.log("Email sent: " + info.response);
+      //     }
+
+      const text = `New order from ${name} in room ${roomNumber} with total amount of ${totalAmount},\n delivery needed: ${delivery}, \n items:
+    ${
+      ordered.length > 0
+        ? ordered.map((item) => {
+            return item;
+          })
+        : "No items"
+    }
+    `;
+
+      fetch(
+        process.env.NEXT_PUBLIC_WEBHOOK_URL || "http://localhost:3001/webhook",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text,
+          }),
         }
-        `,
-      };
-
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          throw new Error("Error sending email");
+      ).then((response) => {
+        if (response.ok) {
+          console.log("Message sent");
         } else {
-          console.log("Email sent: " + info.response);
+          throw new Error("Error sending message");
         }
       });
     } catch (error) {
       return NextResponse.json(
         {
           success: false,
-          message: "Error sending email",
+          message: "Error sending message",
         },
         { status: 400 }
       );
