@@ -5,12 +5,12 @@ import Product from "@/models/Product";
 // GET single product
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
 
   try {
-    const product = await Product.findById(params.id);
+    const product = await Product.findById((await params).id);
 
     if (!product) {
       return NextResponse.json(
@@ -43,16 +43,22 @@ export async function GET(
 // UPDATE product
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
 
   try {
     const productData = await req.json();
-    const product = await Product.findByIdAndUpdate(params.id, productData, {
-      new: true,
-      runValidators: true,
-    });
+    const product = await Product.findByIdAndUpdate(
+      (
+        await params
+      ).id,
+      productData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!product) {
       return NextResponse.json(
@@ -85,12 +91,12 @@ export async function PUT(
 // DELETE product
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
 
   try {
-    const product = await Product.findByIdAndDelete(params.id);
+    const product = await Product.findByIdAndDelete((await params).id);
 
     if (!product) {
       return NextResponse.json(

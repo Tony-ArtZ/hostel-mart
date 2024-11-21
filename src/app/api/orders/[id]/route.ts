@@ -5,12 +5,14 @@ import Order from "@/models/Order";
 // GET single order
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
 
   try {
-    const order = await Order.findById(params.id).populate("items.product");
+    const order = await Order.findById((await params).id).populate(
+      "items.product"
+    );
 
     if (!order) {
       return NextResponse.json(
@@ -43,14 +45,16 @@ export async function GET(
 // UPDATE order status
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await dbConnect();
 
   try {
     const { status } = await req.json();
     const order = await Order.findByIdAndUpdate(
-      params.id,
+      (
+        await params
+      ).id,
       { status },
       { new: true, runValidators: true }
     );
