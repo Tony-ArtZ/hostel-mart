@@ -3,7 +3,11 @@ import Link from "next/link";
 import { useCart } from "@/components/CartContext";
 
 export default function CartPage() {
-  const { cart, removeFromCart, clearCart } = useCart();
+  const { cart, updateCartItemQuantity, clearCart } = useCart();
+
+  if (typeof window === "undefined") {
+    return null; // Prevent hydration error
+  }
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -32,13 +36,28 @@ export default function CartPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span>{item.quantity}</span>
                   <button
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() =>
+                      updateCartItemQuantity(
+                        item.id,
+                        item.quantity > 1 ? item.quantity - 1 : 0
+                      )
+                    }
                     className="bg-red-600/50 text-red-300 px-3 py-1 rounded-md 
                     hover:bg-red-700/50 transition-colors"
                   >
-                    Remove
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button
+                    onClick={() =>
+                      updateCartItemQuantity(item.id, item.quantity + 1)
+                    }
+                    className="bg-emerald-600/50 text-emerald-300 px-3 py-1 rounded-md 
+                    hover:bg-emerald-700/50 transition-colors"
+                    disabled={item.quantity >= item.stock}
+                  >
+                    +
                   </button>
                 </div>
               </div>
