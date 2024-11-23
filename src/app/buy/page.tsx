@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useCart } from "@/components/CartContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner"; // Optional: for better notifications
@@ -11,6 +11,22 @@ export default function BuyPage() {
   const [roomNumber, setRoomNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRoomDelivery, setIsRoomDelivery] = useState(false);
+  const [isDeliveryEnabled, setIsDeliveryEnabled] = useState(false);
+
+  useEffect(() => {
+    const fetchDeliveryStatus = async () => {
+      try {
+        const response = await fetch("/api/delivery-status");
+        const data = await response.json();
+        console.log(data);
+        setIsDeliveryEnabled(data.data.delivering);
+      } catch (error) {
+        console.error("Failed to fetch delivery status:", error);
+      }
+    };
+
+    fetchDeliveryStatus();
+  }, []);
 
   const total =
     cart.reduce((sum, item) => sum + item.price * item.quantity, 0) +
@@ -108,15 +124,22 @@ export default function BuyPage() {
               <span>₹{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
-          <div className="flex justify-between mt-4">
-            <label className="text-emerald-400">Room Delivery (+₹7)</label>
-            <input
-              type="checkbox"
-              checked={isRoomDelivery}
-              onChange={(e) => setIsRoomDelivery(e.target.checked)}
-              className="form-checkbox h-5 w-5 text-emerald-600"
-            />
-          </div>
+          {isDeliveryEnabled && (
+            <div className="flex justify-between mt-4">
+              <label className="text-emerald-400">Room Delivery (+₹7)</label>
+              <input
+                type="checkbox"
+                checked={isRoomDelivery}
+                onChange={(e) => setIsRoomDelivery(e.target.checked)}
+                className="form-checkbox h-5 w-5 text-emerald-600"
+              />
+            </div>
+          )}
+          {!isDeliveryEnabled && (
+            <p className="text-red-500 mt-4">
+              Delivery is currently unavailable. Please choose pickup.
+            </p>
+          )}
           <div className="border-t mt-4 pt-2 font-bold text-emerald-300">
             Total: ₹{total.toFixed(2)}
           </div>
