@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Reduce stock
-        product.stock -= item.quantity;
-        await product.save({ session });
+        // product.stock -= item.quantity;
+        // await product.save({ session });
         ordered.push(product.name);
 
         return {
@@ -51,6 +51,20 @@ export async function POST(req: NextRequest) {
     if (delivery) {
       totalAmount += 7;
     }
+
+    // Create order
+    const order = await Order.create(
+      [
+        {
+          name,
+          roomNumber,
+          items: processedItems,
+          totalAmount,
+          delivery,
+        },
+      ],
+      { session }
+    );
 
     try {
       //   const transporter = nodemailer.createTransport({
@@ -105,6 +119,7 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             text,
+            id: order[0]._id,
           }),
         }
       ).then((response) => {
@@ -123,20 +138,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Create order
-    const order = await Order.create(
-      [
-        {
-          name,
-          roomNumber,
-          items: processedItems,
-          totalAmount,
-          delivery,
-        },
-      ],
-      { session }
-    );
 
     // Commit transaction
     await session.commitTransaction();
