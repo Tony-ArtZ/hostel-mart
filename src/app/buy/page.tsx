@@ -152,7 +152,7 @@ export default function BuyPage() {
           <p className="text-emerald-500 mt-4 text-lg font-bold">
             For Contact:{" "}
             <span className="text-white text-2xl font-extrabold">
-              +916200714579{" "}
+              Visit 2B-28
             </span>
           </p>
         </div>
