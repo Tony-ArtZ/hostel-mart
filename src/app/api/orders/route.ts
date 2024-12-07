@@ -109,20 +109,20 @@ export async function POST(req: NextRequest) {
         : "No items"
     }
     `;
+      fetch("https://hostel-mart-server.onrender.com", {
+        method: "GET",
+      });
 
-      fetch(
-        process.env.NEXT_PUBLIC_WEBHOOK_URL || "http://localhost:3001/webhook",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text,
-            id: order[0]._id,
-          }),
-        }
-      ).then((response) => {
+      fetch("https://hostel-mart-server.onrender.com/webhook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text,
+          id: order[0]._id,
+        }),
+      }).then((response) => {
         if (response.ok) {
           console.log("Message sent");
         } else {
