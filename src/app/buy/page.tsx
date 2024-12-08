@@ -9,6 +9,8 @@ export default function BuyPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [roomError, setRoomError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRoomDelivery, setIsRoomDelivery] = useState(false);
   const [isDeliveryEnabled, setIsDeliveryEnabled] = useState(false);
@@ -32,12 +34,41 @@ export default function BuyPage() {
     cart.reduce((sum, item) => sum + item.price * item.quantity, 0) +
     (isRoomDelivery ? 7 : 0);
 
+  const validateName = (name: string): boolean => {
+    if (name.length < 3) {
+      setNameError("Name must be at least 3 characters long");
+      return false;
+    }
+    if (name.length > 50) {
+      setNameError("Name must be less than 50 characters");
+      return false;
+    }
+    setNameError("");
+    return true;
+  };
+
+  const validateRoom = (room: string): boolean => {
+    const roomPattern = /^\d[B]-\d+$/;
+    if (!roomPattern.test(room)) {
+      setRoomError("Room must be in format: XB-XX (e.g., 2B-28)");
+      return false;
+    }
+    setRoomError("");
+    return true;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    // Reset errors
+    setNameError("");
+    setRoomError("");
+
     // Validate inputs
-    if (!name || !roomNumber) {
-      toast.error("Please fill in all fields");
+    const isNameValid = validateName(name);
+    const isRoomValid = validateRoom(roomNumber);
+
+    if (!isNameValid || !isRoomValid) {
       return;
     }
 
@@ -163,13 +194,17 @@ export default function BuyPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 bg-emerald-900/50 border border-emerald-700
-              rounded-lg text-emerald-100 placeholder-emerald-500
-              focus:ring-2 focus:ring-emerald-500 transition-all"
+              className={`w-full p-3 bg-emerald-900/50 border ${
+                nameError ? "border-red-500" : "border-emerald-700"
+              } rounded-lg text-emerald-100 placeholder-emerald-500
+              focus:ring-2 focus:ring-emerald-500 transition-all`}
               placeholder="Enter your name"
               required
               disabled={isSubmitting}
             />
+            {nameError && (
+              <p className="text-red-500 text-sm mt-1">{nameError}</p>
+            )}
           </div>
           <div>
             <label className="block mb-2 text-emerald-400">Room Number</label>
@@ -177,13 +212,17 @@ export default function BuyPage() {
               type="text"
               value={roomNumber}
               onChange={(e) => setRoomNumber(e.target.value)}
-              className="w-full p-3 bg-emerald-900/50 border border-emerald-700
-              rounded-lg text-emerald-100 placeholder-emerald-500
-              focus:ring-2 focus:ring-emerald-500 transition-all"
-              placeholder="Enter room number"
+              className={`w-full p-3 bg-emerald-900/50 border ${
+                roomError ? "border-red-500" : "border-emerald-700"
+              } rounded-lg text-emerald-100 placeholder-emerald-500
+              focus:ring-2 focus:ring-emerald-500 transition-all`}
+              placeholder="Enter room number (e.g., 2B-28)"
               required
               disabled={isSubmitting}
             />
+            {roomError && (
+              <p className="text-red-500 text-sm mt-1">{roomError}</p>
+            )}
           </div>
           <button
             type="submit"
